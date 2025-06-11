@@ -1,7 +1,11 @@
 import { useGameLogic } from '@/hooks/useGameLogic';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 
-export const TheGame = () => {
+interface TheGameProps {
+    setStatusCallback?: (status: 'idle' | 'playing' | 'won' | 'lost') => void;
+}
+
+export const TheGame = ({ setStatusCallback }: TheGameProps) => {
     const {
         targetNumber,
         attemptsLeft,
@@ -9,7 +13,12 @@ export const TheGame = () => {
         hint,
         refresh,
         lastGuessedNumber,
+        status,
     } = useGameLogic();
+
+    useEffect(() => {
+        setStatusCallback?.(status);
+    }, [status]);
 
     const renderNumberButton = useCallback(
         (number: number) => {
@@ -57,8 +66,8 @@ export const TheGame = () => {
                     return renderNumberButton(number);
                 })}
             </div>
-            <div className="text-xl">{renderHint()}</div>
-            
+            <div className="text-xl text-center h-[40px]">{renderHint()}</div>
+
             <div className="mt-5"></div>
 
             <button
