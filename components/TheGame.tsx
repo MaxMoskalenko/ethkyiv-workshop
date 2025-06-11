@@ -6,15 +6,7 @@ interface TheGameProps {
 }
 
 export const TheGame = ({ setStatusCallback }: TheGameProps) => {
-    const {
-        targetNumber,
-        attemptsLeft,
-        guessNumber,
-        hint,
-        refresh,
-        lastGuessedNumber,
-        status,
-    } = useGameLogic();
+    const { targetNumber, attemptsLeft, guessNumber, hint, refresh, lastGuessedNumber, status } = useGameLogic();
 
     useEffect(() => {
         setStatusCallback?.(status);
@@ -41,11 +33,7 @@ export const TheGame = ({ setStatusCallback }: TheGameProps) => {
         }
 
         if (hint === '=') {
-            return (
-                <span className="text-green-700">
-                    You guessed the number {targetNumber}
-                </span>
-            );
+            return <span className="text-green-700">You guessed the number {targetNumber}</span>;
         }
 
         return (
@@ -70,10 +58,7 @@ export const TheGame = ({ setStatusCallback }: TheGameProps) => {
 
             <div className="mt-5"></div>
 
-            <button
-                className="border rounded-md text-center px-12 py-2 cursor-pointer"
-                onClick={refresh}
-            >
+            <button className="border rounded-md text-center px-12 py-2 cursor-pointer" onClick={refresh}>
                 <span className="text-xl">Refresh</span>
             </button>
         </>

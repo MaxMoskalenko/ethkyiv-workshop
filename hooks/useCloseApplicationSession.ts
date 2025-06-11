@@ -11,13 +11,11 @@ export const useCloseApplicationSession = () => {
             participantA: Address,
             participantB: Address,
             amount: string,
-            payerIndex: 0 | 1,
+            payerIndex: 0 | 1
         ) => {
             try {
                 if (!appId) {
-                    throw new Error(
-                        'Application ID is required to close the session.'
-                    );
+                    throw new Error('Application ID is required to close the session.');
                 }
 
                 // Create allocations with asset type
@@ -41,10 +39,7 @@ export const useCloseApplicationSession = () => {
                 };
 
                 // Create the signed message
-                const signedMessage = await createCloseAppSessionMessage(
-                    signer,
-                    [closeRequest]
-                );
+                const signedMessage = await createCloseAppSessionMessage(signer, [closeRequest]);
 
                 // Send the request and wait for response
                 sendRequest(signedMessage);

@@ -8,17 +8,10 @@ import { Address } from 'viem';
 
 export default function Home() {
     const { connectWallet, isConnected, walletClient } = useWallet();
-    const [gameStatus, setGameStatus] = useState<
-        'idle' | 'playing' | 'won' | 'lost'
-    >('idle');
+    const [gameStatus, setGameStatus] = useState<'idle' | 'playing' | 'won' | 'lost'>('idle');
 
-    const {
-        connect,
-        fetchBalances,
-        isAuthenticated,
-        createApplicationSession,
-        closeApplicationSession,
-    } = useClearNode();
+    const { connect, fetchBalances, isAuthenticated, createApplicationSession, closeApplicationSession } =
+        useClearNode();
 
     useEffect(() => {
         if (!walletClient) return;
@@ -33,19 +26,14 @@ export default function Home() {
     }, [isAuthenticated, !!walletClient]);
 
     const renderCreateSessionSection = useMemo(() => {
-        const isEnabled =
-            isAuthenticated && gameStatus === 'idle' && !!walletClient;
-
+        const isEnabled = isAuthenticated && gameStatus === 'idle' && !!walletClient;
         const account = walletClient?.account?.address as Address;
 
         return (
             <div className="flex flex-row justify-between w-full">
                 <span>Create session</span>
                 {isEnabled && (
-                    <button
-                        onClick={() => createApplicationSession(account)}
-                        className="cursor-pointer"
-                    >
+                    <button onClick={() => createApplicationSession(account)} className="cursor-pointer">
                         Click
                     </button>
                 )}
@@ -57,10 +45,7 @@ export default function Home() {
         const appID = localStorage.getItem('app_session_id');
 
         const isCloseEnabled =
-            isAuthenticated &&
-            (gameStatus === 'won' || gameStatus === 'lost') &&
-            !!walletClient &&
-            appID;
+            isAuthenticated && (gameStatus === 'won' || gameStatus === 'lost') && !!walletClient && appID;
 
         const account = walletClient?.account?.address as Address;
 
@@ -69,12 +54,7 @@ export default function Home() {
                 <span>Close session</span>
                 {isCloseEnabled && (
                     <button
-                        onClick={() =>
-                            closeApplicationSession(
-                                account,
-                                gameStatus === 'lost' ? 0 : 1
-                            )
-                        }
+                        onClick={() => closeApplicationSession(account, gameStatus === 'lost' ? 0 : 1)}
                         className="cursor-pointer"
                     >
                         Click
@@ -128,9 +108,7 @@ export default function Home() {
 
     return (
         <div className="w-screen h-screen bg-blue-300 flex items-center justify-center">
-            <div className="flex flex-col gap-4 items-center w-[400px]">
-                {renderContent}
-            </div>
+            <div className="flex flex-col gap-4 items-center w-[400px]">{renderContent}</div>
         </div>
     );
 }

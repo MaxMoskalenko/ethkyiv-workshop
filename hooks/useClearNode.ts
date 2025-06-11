@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+
 import {
     Allowance,
     AuthRequest,
@@ -21,42 +23,31 @@ export const useClearNode = () => {
 
     const { address: sessionKeyAddress, sign: messageSigner } = useSessionKey();
 
-    const { createApplicationSession: createApplicationSessionMessage } =
-        useCreateApplicationSession();
+    const { createApplicationSession: createApplicationSessionMessage } = useCreateApplicationSession();
 
-    const { closeApplicationSession: closeApplicationSessionMessage } =
-        useCloseApplicationSession();
+    const { closeApplicationSession: closeApplicationSessionMessage } = useCloseApplicationSession();
 
-    const getOnConnectCallback = useCallback(
-        (ws: WebSocket, authRequestParams: AuthRequest) => {
-            return async () => {
-                // Get the stored JWT token
-                const jwtToken = window.localStorage.getItem('clearnode_jwt');
+    const getOnConnectCallback = useCallback((ws: WebSocket, authRequestParams: AuthRequest) => {
+        return async () => {
+            // Get the stored JWT token
+            const jwtToken = window.localStorage.getItem('clearnode_jwt');
 
-                let authRequestMsg;
+            let authRequestMsg;
 
-                if (jwtToken) {
-                    authRequestMsg = await createAuthVerifyMessageWithJWT(
-                        jwtToken // JWT token for reconnection
-                    );
-                } else {
-                    authRequestMsg = await createAuthRequestMessage(
-                        authRequestParams
-                    );
-                }
+            if (jwtToken) {
+                authRequestMsg = await createAuthVerifyMessageWithJWT(
+                    jwtToken // JWT token for reconnection
+                );
+            } else {
+                authRequestMsg = await createAuthRequestMessage(authRequestParams);
+            }
 
-                ws.send(authRequestMsg);
-            };
-        },
-        []
-    );
+            ws.send(authRequestMsg);
+        };
+    }, []);
 
     const getOnMessageCallback = useCallback(
-        (
-            ws: WebSocket,
-            walletClient: WalletClient,
-            authRequestParams: AuthRequest
-        ) => {
+        (ws: WebSocket, walletClient: WalletClient, authRequestParams: AuthRequest) => {
             return async (event: MessageEvent) => {
                 try {
                     if (!walletClient) {
@@ -69,33 +60,24 @@ export const useClearNode = () => {
                     switch (message.method) {
                         case 'auth_challenge':
                             console.log('Received auth challenge');
-                            const eip712MessageSigner =
-                                createEIP712AuthMessageSigner(
-                                    walletClient,
-                                    {
-                                        scope: authRequestParams.scope!,
-                                        application:
-                                            authRequestParams.application!,
-                                        participant:
-                                            authRequestParams.participant,
-                                        expire: authRequestParams.expire!,
-                                        allowances:
-                                            authRequestParams.allowances.map(
-                                                (a: Allowance) => ({
-                                                    asset: a.symbol,
-                                                    amount: a.amount,
-                                                })
-                                            ),
-                                    },
-                                    {
-                                        name: 'Your Domain',
-                                    }
-                                );
-
-                            const authVerifyMsg = await createAuthVerifyMessage(
-                                eip712MessageSigner,
-                                message
+                            const eip712MessageSigner = createEIP712AuthMessageSigner(
+                                walletClient,
+                                {
+                                    scope: authRequestParams.scope!,
+                                    application: authRequestParams.application!,
+                                    participant: authRequestParams.participant,
+                                    expire: authRequestParams.expire!,
+                                    allowances: authRequestParams.allowances.map((a: Allowance) => ({
+                                        asset: a.symbol,
+                                        amount: a.amount,
+                                    })),
+                                },
+                                {
+                                    name: 'Your Domain',
+                                }
                             );
+
+                            const authVerifyMsg = await createAuthVerifyMessage(eip712MessageSigner, message);
 
                             ws.send(authVerifyMsg);
                             break;
@@ -107,18 +89,16 @@ export const useClearNode = () => {
                             setIsAuthenticated(true);
 
                             if (message.params.jwtToken) {
-                                window.localStorage.setItem(
-                                    'clearnode_jwt',
-                                    message.params.jwtToken
-                                );
+                                window.localStorage.setItem('clearnode_jwt', message.params.jwtToken);
                             }
                             break;
                         case 'error':
-                            console.error(
-                                'Authentication failed:',
-                                message.params.error
-                            );
+                            console.error('Authentication failed:', message.params.error);
                             return;
+                        // TODO: add parsing for pong - ignore
+                        // Balances -- display it
+                        // open session -- save app session ID to local storage
+                        // close session -- remove app session ID from local storage
                     }
                 } catch (error) {
                     console.error('Error handling message:', error);
@@ -139,9 +119,7 @@ export const useClearNode = () => {
 
                 ws.send(msg);
             } else {
-                console.warn(
-                    'WebSocket is not open, attempting to reconnect...'
-                );
+                console.warn('WebSocket is not open, attempting to reconnect...');
                 ws.close();
                 setWs(null);
             }
@@ -176,11 +154,7 @@ export const useClearNode = () => {
 
             ws.onopen = getOnConnectCallback(ws, authRequestParams);
 
-            ws.onmessage = getOnMessageCallback(
-                ws,
-                walletClient,
-                authRequestParams
-            );
+            ws.onmessage = getOnMessageCallback(ws, walletClient, authRequestParams);
 
             setWs(ws);
         },
@@ -194,10 +168,7 @@ export const useClearNode = () => {
                 return;
             }
 
-            const msg = await createGetLedgerBalancesMessage(
-                messageSigner,
-                account
-            );
+            const msg = await createGetLedgerBalancesMessage(messageSigner, account);
             ws.send(msg);
         },
         [messageSigner, ws]
