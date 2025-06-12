@@ -10,6 +10,7 @@ import {
     createGetLedgerBalancesMessage,
     createPingMessage,
     parseRPCResponse,
+    RPCChannelStatus,
     RPCMethod,
 } from '@erc7824/nitrolite';
 import { useCallback, useEffect, useState } from 'react';
@@ -107,6 +108,7 @@ export const useClearNode = (): UseClearNodeState => {
                             console.error('Authentication failed:', message.params.error);
                             return;
                         case RPCMethod.GetLedgerBalances:
+                            console.log(message);
                             const balance = message.params.find((a) => a.asset === 'usdc');
                             setUSDCBalance(balance ? balance.amount : '0');
                             return;
@@ -115,7 +117,7 @@ export const useClearNode = (): UseClearNodeState => {
                             localStorage.setItem('app_session_id', appSessionId);
                             return;
                         case RPCMethod.CloseAppSession:
-                            if (message.params.status == 'close') {
+                            if (message.params.status === RPCChannelStatus.Closed) {
                                 localStorage.removeItem('app_session_id');
                             }
                             return;

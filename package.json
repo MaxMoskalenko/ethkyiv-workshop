@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@erc7824/nitrolite": "^0.2.11",
+    "@erc7824/nitrolite": "^0.2.14",
     "ethers": "5.7.2",
     "next": "15.3.3",
     "react": "^19.0.0",
