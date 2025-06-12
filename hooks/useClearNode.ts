@@ -10,6 +10,7 @@ import {
     createGetLedgerBalancesMessage,
     createPingMessage,
     parseRPCResponse,
+    RPCMethod,
 } from '@erc7824/nitrolite';
 import { useCallback, useEffect, useState } from 'react';
 import { Address, Hex, WalletClient } from 'viem';
@@ -20,6 +21,7 @@ import { useCloseApplicationSession } from './useCloseApplicationSession';
 export const useClearNode = () => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [ws, setWs] = useState<WebSocket | null>(null);
+    const [usdcBalance, setUSDCBalance] = useState<string>('0');
 
     const { address: sessionKeyAddress, sign: messageSigner } = useSessionKey();
 
@@ -58,7 +60,7 @@ export const useClearNode = () => {
                     const message = parseRPCResponse(event.data);
 
                     switch (message.method) {
-                        case 'auth_challenge':
+                        case RPCMethod.AuthChallenge:
                             console.log('Received auth challenge');
                             const eip712MessageSigner = createEIP712AuthMessageSigner(
                                 walletClient,
@@ -81,7 +83,7 @@ export const useClearNode = () => {
 
                             ws.send(authVerifyMsg);
                             break;
-                        case 'auth_verify':
+                        case RPCMethod.AuthVerify:
                             if (!message.params.success) {
                                 return;
                             }
@@ -92,13 +94,22 @@ export const useClearNode = () => {
                                 window.localStorage.setItem('clearnode_jwt', message.params.jwtToken);
                             }
                             break;
-                        case 'error':
+                        case RPCMethod.Error:
                             console.error('Authentication failed:', message.params.error);
                             return;
-                        // TODO: add parsing for pong - ignore
-                        // Balances -- display it
-                        // open session -- save app session ID to local storage
-                        // close session -- remove app session ID from local storage
+                        case RPCMethod.GetLedgerBalances:
+                            const balance = message.params.find((a) => a.asset === 'usdc');
+                            setUSDCBalance(balance ? balance.amount : '0');
+                            return;
+                        case RPCMethod.CreateAppSession:
+                            const appSessionId = message.params.app_session_id
+                            localStorage.setItem('app_session_id', appSessionId);
+                            return;
+                        case RPCMethod.CloseAppSession:
+                            if (message.params.status == 'close') {
+                                localStorage.removeItem('app_session_id');
+                            }
+                            return;
                     }
                 } catch (error) {
                     console.error('Error handling message:', error);
@@ -181,17 +192,14 @@ export const useClearNode = () => {
                 return;
             }
 
-            const sendRequest = (msg: string) => {
-                ws.send(msg);
-            };
-
-            await createApplicationSessionMessage(
+            const msg = await createApplicationSessionMessage(
                 messageSigner,
-                sendRequest,
                 account,
                 process.env.NEXT_PUBLIC_CP_SESSION_KEY_PUBLIC_KEY as Address,
                 '0.001'
             );
+
+            ws.send(msg);
         },
         [createApplicationSessionMessage, messageSigner, ws]
     );
@@ -202,11 +210,6 @@ export const useClearNode = () => {
                 console.error('WebSocket is not connected');
                 return;
             }
-
-            const sendRequest = (msg: string) => {
-                ws.send(msg);
-            };
-
             const appId = localStorage.getItem('app_session_id');
 
             if (!appId) {
@@ -214,15 +217,16 @@ export const useClearNode = () => {
                 return;
             }
 
-            await closeApplicationSessionMessage(
+            const msg = await closeApplicationSessionMessage(
                 messageSigner,
-                sendRequest,
                 appId as Hex,
                 account,
                 process.env.NEXT_PUBLIC_CP_SESSION_KEY_PUBLIC_KEY as Address,
                 '0.001',
                 payerIndex
             );
+
+            ws.send(msg);
         },
         [closeApplicationSessionMessage, messageSigner, ws]
     );
@@ -233,5 +237,6 @@ export const useClearNode = () => {
         fetchBalances,
         createApplicationSession,
         closeApplicationSession,
+        usdcBalance,
     };
 };

@@ -6,7 +6,6 @@ export const useCloseApplicationSession = () => {
     const closeApplicationSession = useCallback(
         async (
             signer: MessageSigner,
-            sendRequest: (message: string) => void,
             appId: Hex,
             participantA: Address,
             participantB: Address,
@@ -41,8 +40,7 @@ export const useCloseApplicationSession = () => {
                 // Create the signed message
                 const signedMessage = await createCloseAppSessionMessage(signer, [closeRequest]);
 
-                // Send the request and wait for response
-                sendRequest(signedMessage);
+                return signedMessage
             } catch (error) {
                 console.error('Error closing application session:', error);
                 throw new Error('Failed to close application session');

@@ -10,7 +10,7 @@ export default function Home() {
     const { connectWallet, isConnected, walletClient } = useWallet();
     const [gameStatus, setGameStatus] = useState<'idle' | 'playing' | 'won' | 'lost'>('idle');
 
-    const { connect, fetchBalances, isAuthenticated, createApplicationSession, closeApplicationSession } =
+    const { connect, fetchBalances, isAuthenticated, createApplicationSession, closeApplicationSession, usdcBalance } =
         useClearNode();
 
     useEffect(() => {
@@ -77,12 +77,16 @@ export default function Home() {
                         ...{account.slice(-4)}
                     </span>
                 </div>
+                <div className="flex flex-row justify-between w-full">
+                    <span>Balance</span>
+                    <span>{usdcBalance ? `${usdcBalance} USDC` : 'Loading...'}</span>
+                </div>
 
                 {renderCreateSessionSection}
                 {renderCloseSessionSection}
             </div>
         );
-    }, [walletClient, renderCreateSessionSection, renderCloseSessionSection]);
+    }, [walletClient, renderCreateSessionSection, renderCloseSessionSection, usdcBalance]);
 
     const renderContent = useMemo(() => {
         if (isConnected) {

@@ -6,7 +6,6 @@ export const useCreateApplicationSession = () => {
     const createApplicationSession = useCallback(
         async (
             signer: MessageSigner,
-            sendRequest: (message: string) => void,
             participantA: Address,
             participantB: Address,
             amount: string
@@ -45,7 +44,7 @@ export const useCreateApplicationSession = () => {
                 ]);
 
                 // Send the signed message to the ClearNode
-                sendRequest(signedMessage);
+                return signedMessage;
             } catch (error) {
                 console.error('Error creating application session:', error);
                 throw new Error('Failed to create application session');
