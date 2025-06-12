@@ -1,5 +1,6 @@
 'use client';
 
+import { ControlButton } from '@/components/ControlButton';
 import { TheGame } from '@/components/TheGame';
 import { useClearNode } from '@/hooks/useClearNode';
 import { useWallet } from '@/hooks/useWallet';
@@ -30,37 +31,27 @@ export default function Home() {
         const account = walletClient?.account?.address as Address;
 
         return (
-            <div className="flex flex-row justify-between w-full">
-                <span>Create session</span>
-                {isEnabled && (
-                    <button onClick={() => createApplicationSession(account)} className="cursor-pointer">
-                        Click
-                    </button>
-                )}
-            </div>
+            <ControlButton
+                label="Create session"
+                isEnabled={!!isEnabled}
+                onClick={() => createApplicationSession(account)}
+            />
         );
     }, [createApplicationSession, gameStatus, isAuthenticated, walletClient]);
 
     const renderCloseSessionSection = useMemo(() => {
         const appID = localStorage.getItem('app_session_id');
 
-        const isCloseEnabled =
-            isAuthenticated && (gameStatus === 'won' || gameStatus === 'lost') && !!walletClient && appID;
+        const isEnabled = isAuthenticated && (gameStatus === 'won' || gameStatus === 'lost') && !!walletClient && appID;
 
         const account = walletClient?.account?.address as Address;
 
         return (
-            <div className="flex flex-row justify-between w-full">
-                <span>Close session</span>
-                {isCloseEnabled && (
-                    <button
-                        onClick={() => closeApplicationSession(account, gameStatus === 'lost' ? 0 : 1)}
-                        className="cursor-pointer"
-                    >
-                        Click
-                    </button>
-                )}
-            </div>
+            <ControlButton
+                label="Close session"
+                isEnabled={!!isEnabled}
+                onClick={() => closeApplicationSession(account, gameStatus === 'lost' ? 0 : 1)}
+            />
         );
     }, [closeApplicationSession, gameStatus, isAuthenticated, walletClient]);
 

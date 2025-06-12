@@ -1,15 +1,20 @@
 import { MessageSigner, RequestData, ResponsePayload } from '@erc7824/nitrolite';
 import { ethers } from 'ethers';
 import { useCallback, useMemo } from 'react';
-import { Hex } from 'viem';
+import { Address, Hex } from 'viem';
 
-export const useSessionKey = () => {
+interface UseSessionKeyState {
+    address: Address;
+    signer: MessageSigner;
+}
+
+export const useSessionKey = (): UseSessionKeyState => {
     // Create ethers wallet from private key
     const wallet = useMemo(() => {
         return new ethers.Wallet(process.env.NEXT_PUBLIC_SESSION_KEY_PRIVATE_KEY || '');
     }, []);
 
-    const sign: MessageSigner = useCallback(
+    const signer: MessageSigner = useCallback(
         async (payload: RequestData | ResponsePayload): Promise<Hex> => {
             try {
                 const messageBytes = ethers.utils.arrayify(ethers.utils.id(JSON.stringify(payload)));
@@ -28,8 +33,7 @@ export const useSessionKey = () => {
     );
 
     return {
-        publicKey: wallet.publicKey,
         address: wallet.address as Hex,
-        sign,
+        signer,
     };
 };

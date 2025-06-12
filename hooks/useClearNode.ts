@@ -18,12 +18,21 @@ import { useSessionKey } from './useStateWallet';
 import { useCreateApplicationSession } from './useCreateApplicationSession';
 import { useCloseApplicationSession } from './useCloseApplicationSession';
 
-export const useClearNode = () => {
+interface UseClearNodeState {
+    isAuthenticated: boolean;
+    connect: (walletClient: WalletClient) => Promise<void>;
+    fetchBalances: (account: Address) => Promise<void>;
+    createApplicationSession: (account: Address) => Promise<void>;
+    closeApplicationSession: (account: Address, payerIndex: 0 | 1) => Promise<void>;
+    usdcBalance: string;
+}
+
+export const useClearNode = (): UseClearNodeState => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [ws, setWs] = useState<WebSocket | null>(null);
     const [usdcBalance, setUSDCBalance] = useState<string>('0');
 
-    const { address: sessionKeyAddress, sign: messageSigner } = useSessionKey();
+    const { address: sessionKeyAddress, signer: messageSigner } = useSessionKey();
 
     const { createApplicationSession: createApplicationSessionMessage } = useCreateApplicationSession();
 
