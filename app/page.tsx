@@ -11,8 +11,14 @@ export default function Home() {
     const { connectWallet, isConnected, walletClient } = useWallet();
     const [gameStatus, setGameStatus] = useState<'idle' | 'playing' | 'won' | 'lost'>('idle');
 
-    const { connect, fetchBalances, isAuthenticated, createApplicationSession, closeApplicationSession, usdcBalance } =
-        useClearNode();
+    const {
+        connect,
+        getLedgerBalances,
+        isAuthenticated,
+        createApplicationSession,
+        closeApplicationSession,
+        usdcBalance,
+    } = useClearNode();
 
     useEffect(() => {
         if (!walletClient) return;
@@ -22,7 +28,7 @@ export default function Home() {
 
     useEffect(() => {
         if (isAuthenticated && walletClient) {
-            fetchBalances(walletClient.account!.address);
+            getLedgerBalances(walletClient.account!.address);
         }
     }, [isAuthenticated, !!walletClient]);
 
@@ -40,6 +46,10 @@ export default function Home() {
     }, [createApplicationSession, gameStatus, isAuthenticated, walletClient]);
 
     const renderCloseSessionSection = useMemo(() => {
+        if (typeof window === 'undefined') {
+            return null;
+        }
+
         const appID = localStorage.getItem('app_session_id');
 
         const isEnabled = isAuthenticated && (gameStatus === 'won' || gameStatus === 'lost') && !!walletClient && appID;
@@ -50,7 +60,7 @@ export default function Home() {
             <ControlButton
                 label="Close session"
                 isEnabled={!!isEnabled}
-                onClick={() => closeApplicationSession(account, gameStatus === 'lost' ? 0 : 1)}
+                onClick={() => closeApplicationSession(account, gameStatus === 'won' ? 0 : 1)}
             />
         );
     }, [closeApplicationSession, gameStatus, isAuthenticated, walletClient]);

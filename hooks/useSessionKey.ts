@@ -8,19 +8,19 @@ interface UseSessionKeyState {
     signer: MessageSigner;
 }
 
-export const useSessionKey = (): UseSessionKeyState => {
+export const useSessionKey = (pk: Hex): UseSessionKeyState => {
     // Create ethers wallet from private key
     const wallet = useMemo(() => {
-        return new ethers.Wallet(process.env.NEXT_PUBLIC_SESSION_KEY_PRIVATE_KEY || '');
-    }, []);
+        return new ethers.Wallet(pk);
+    }, [pk]);
 
     const signer: MessageSigner = useCallback(
         async (payload: RequestData | ResponsePayload): Promise<Hex> => {
             try {
                 const messageBytes = ethers.utils.arrayify(ethers.utils.id(JSON.stringify(payload)));
-
+                
                 const flatSignature = await wallet._signingKey().signDigest(messageBytes);
-
+                
                 const signature = ethers.utils.joinSignature(flatSignature);
 
                 return signature as Hex;
